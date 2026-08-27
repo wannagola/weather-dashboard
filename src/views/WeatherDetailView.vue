@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTemperature } from '@/composables/useTemperature'
 import { fetchWeatherDetail } from '@/services/weatherApi'
+import BaseDashboardCard from '@/components/weather/BaseDashboardCard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -33,19 +34,92 @@ onMounted(loadWeatherDetail)
 </script>
 
 <template>
-  <section>
-    <h2>상세 날씨</h2>
+  <BaseDashboardCard>
+    <template #title><h2>상세 날씨</h2></template>
+
     <p v-if="isLoading">데이터를 불러오는 중입니다...</p>
     <p v-else-if="errorMessage">{{ errorMessage }}</p>
 
-    <div v-else-if="cityData">
-      <h3>{{ cityData.name }}</h3>
-      <p>기온: {{ displayTemp }}{{ unitSymbol }}</p>
-      <p>날씨: {{ cityData.status }}</p>
-      <p>습도: {{ cityData.humidity }}%</p>
-      <p>풍속: {{ cityData.wind }}m/s</p>
+    <div v-else-if="cityData" class="weather-detail">
+      <div class="weather-detail__header">
+        <h3 class="weather-detail__name">{{ cityData.name }}</h3>
+        <el-tag size="large" effect="plain">{{ cityData.status }}</el-tag>
+      </div>
+
+      <p class="weather-detail__temp">
+        {{ displayTemp }}<span class="weather-detail__unit">{{ unitSymbol }}</span>
+      </p>
+
+      <div class="weather-detail__stats">
+        <div class="stat">
+          <span class="stat__label">습도</span>
+          <span class="stat__value">{{ cityData.humidity }}%</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">풍속</span>
+          <span class="stat__value">{{ cityData.wind }}m/s</span>
+        </div>
+      </div>
     </div>
 
-    <button @click="router.push({ name: 'WeatherHome' })">홈으로 돌아가기</button>
-  </section>
+    <el-button size="large" @click="router.push({ name: 'WeatherHome' })">
+      ← 홈으로 돌아가기
+    </el-button>
+  </BaseDashboardCard>
 </template>
+
+<style scoped>
+.weather-detail__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.weather-detail__name {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.weather-detail__temp {
+  margin: 0 0 20px 0;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.weather-detail__unit {
+  margin-left: 4px;
+  font-size: 28px;
+  font-weight: 500;
+  color: #909399;
+}
+
+.weather-detail__stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat {
+  flex: 1;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #f5f7fa;
+  text-align: center;
+}
+
+.stat__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #909399;
+}
+
+.stat__value {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+}
+</style>
