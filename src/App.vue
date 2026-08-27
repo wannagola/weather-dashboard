@@ -12,6 +12,7 @@ provide('appTitle', 'Vue Weather Dashboard')
       <nav class="app-nav">
         <RouterLink to="/" class="app-nav__link">Home</RouterLink>
         <RouterLink to="/about" class="app-nav__link">About</RouterLink>
+        <RouterLink to="/stats" class="app-nav__link">Stats</RouterLink>
       </nav>
     </header>
 
