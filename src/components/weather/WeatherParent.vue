@@ -5,6 +5,7 @@ import BaseDashboardCard from './BaseDashboardCard.vue'
 import SearchBar from './SearchBar.vue'
 import WeatherCard from './WeatherCard.vue'
 import UnitToggler from './UnitToggler.vue'
+import WeatherPagination from './WeatherPagination.vue'
 import { fetchWeatherList } from '@/services/weatherApi'
 import { useFavoritesStore } from '@/stores/favoritesStore'
 
@@ -114,13 +115,11 @@ function goDetail(cityId) {
           @click-detail="goDetail"
         />
         <p v-if="filteredWeatherList.length === 0">표시할 도시가 없습니다.</p>
-        <el-pagination
+        <WeatherPagination
           v-else
           v-model:current-page="currentPage"
           :page-size="pageSize"
           :total="filteredWeatherList.length"
-          layout="prev, pager, next"
-          background
         />
       </template>
     </BaseDashboardCard>
@@ -140,11 +139,5 @@ function goDetail(cityId) {
   display: flex;
   align-items: center;
   gap: 16px;
-}
-
-.el-pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 12px;
 }
 </style>
