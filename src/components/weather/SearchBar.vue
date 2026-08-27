@@ -19,3 +19,9 @@ const emit = defineEmits(['update-query'])
     />
   </div>
 </template>
+
+<style scoped>
+.search-bar {
+  margin-bottom: 8px;
+}
+</style>

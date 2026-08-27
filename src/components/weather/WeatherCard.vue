@@ -31,3 +31,12 @@ const { displayTemp, unitSymbol } = useTemperature(() => props.cityItem.temp)
     </el-button>
   </article>
 </template>
+
+<style scoped>
+.weather-card {
+  margin: 12px 0;
+  padding: 16px;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+}
+</style>
