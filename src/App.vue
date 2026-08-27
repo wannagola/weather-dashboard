@@ -1,6 +1,7 @@
 <script setup>
 import { provide } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
+import UnitToggler from '@/components/weather/UnitToggler.vue'
 
 provide('appTitle', 'Vue Weather Dashboard')
 </script>
@@ -8,6 +9,7 @@ provide('appTitle', 'Vue Weather Dashboard')
 <template>
   <div class="app-container">
     <header>
+      <UnitToggler />
       <h1>Vue Weather Dashboard</h1>
       <nav>
         <RouterLink to="/">Home</RouterLink>
