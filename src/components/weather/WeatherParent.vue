@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import BaseDashboardCard from './BaseDashboardCard.vue'
 import SearchBar from './SearchBar.vue'
 import WeatherCard from './WeatherCard.vue'
+import UnitToggler from './UnitToggler.vue'
 import { fetchWeatherList } from '@/services/weatherApi'
 
 const route = useRoute()
@@ -18,15 +19,24 @@ const searchQuery = ref(
   typeof route.query.search === 'string' ? route.query.search : '',
 )
 
+const pageSize = 5
+const currentPage = ref(1)
+
 const filteredWeatherList = computed(() => {
   const query = searchQuery.value.trim()
   if (!query) return weatherList.value
   return weatherList.value.filter((city) => city.name.includes(query))
 })
 
+const paginatedWeatherList = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredWeatherList.value.slice(start, start + pageSize)
+})
+
 watch(selectedCityInfo, (message) => console.log('[watch]', message))
 
 watch(searchQuery, (value) => {
+  currentPage.value = 1
   router.replace({
     query: { ...route.query, search: value || undefined },
   })
@@ -59,6 +69,8 @@ function goDetail(cityId) {
 
 <template>
   <div>
+    <p class="status-bar">{{ selectedCityInfo }}</p>
+
     <BaseDashboardCard>
       <template #title><h2>도시 검색</h2></template>
       <SearchBar
@@ -68,21 +80,46 @@ function goDetail(cityId) {
     </BaseDashboardCard>
 
     <BaseDashboardCard>
-      <template #title><h2>지역별 날씨 현황</h2></template>
+      <template #title>
+        <div class="section-title">
+          <h2>지역별 날씨 현황</h2>
+          <UnitToggler />
+        </div>
+      </template>
       <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
       <p v-else-if="errorMessage">{{ errorMessage }}</p>
       <template v-else>
         <WeatherCard
-          v-for="city in filteredWeatherList"
+          v-for="city in paginatedWeatherList"
           :key="city.id"
           :city-item="city"
           @select-card="(message) => (selectedCityInfo = message)"
           @click-detail="goDetail"
         />
         <p v-if="filteredWeatherList.length === 0">검색 결과가 없습니다.</p>
+        <el-pagination
+          v-else
+          v-model:current-page="currentPage"
+          :page-size="pageSize"
+          :total="filteredWeatherList.length"
+          layout="prev, pager, next"
+          background
+        />
       </template>
     </BaseDashboardCard>
-
-    <p class="status-bar">{{ selectedCityInfo }}</p>
   </div>
 </template>
+
+<style scoped>
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.el-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+</style>
