@@ -1,68 +1,53 @@
 <script setup>
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, ref, watch } from 'vue'
+import BaseDashboardCard from './BaseDashboardCard.vue'
+import SearchBar from './SearchBar.vue'
+import WeatherCard from './WeatherCard.vue'
 
 const weatherList = ref([
   { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
   { id: 'city_02', name: '수원', temp: 24, status: '비' },
   { id: 'city_03', name: '부산', temp: 26, status: '구름' },
-  { id: 'city_04', name: '대구', temp: 22, status: '흐림' },
+  { id: 'city_04', name: '대구', temp: 30, status: '맑음' },
 ])
 
 const searchQuery = ref('')
-const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
-
-function showDetail(cityName, status) {
-  window.alert(`${cityName}의 현재 날씨는 [${status}] 상태입니다.`)
-}
+const selectedCityInfo = ref('도시 카드를 선택해 보세요.')
 
 const filteredWeatherList = computed(() => {
   const query = searchQuery.value.trim()
-
   if (!query) return weatherList.value
-
-  return weatherList.value.filter((item) => item.name.includes(query))
+  return weatherList.value.filter((city) => city.name.includes(query))
 })
 
-watch(selectedCityInfo, (newInfo) => {
-  console.log('[watch] 선택 상태:', newInfo)
-})
+watch(selectedCityInfo, (message) => console.log('[watch]', message))
 
-watchEffect(() => {
-  console.log('[watchEffect] 검색어:', searchQuery.value)
-})
+function showDetail(cityId) {
+  window.alert(`${cityId} 상세 화면은 Router 단계에서 연결합니다.`)
+}
 </script>
 
 <template>
-  <div class="dashboard-wrapper">
-    <section class="search-box">
-      <h2>도시 검색</h2>
-      <input
-        type="text"
-        :value="searchQuery"
-        placeholder="검색할 도시 이름 입력"
-        @input="searchQuery = $event.target.value"
+  <div>
+    <BaseDashboardCard>
+      <template #title><h2>도시 검색</h2></template>
+      <SearchBar
+        :current-query="searchQuery"
+        @update-query="(value) => (searchQuery = value)"
       />
-      <p>검색 중인 도시: <strong>{{ searchQuery }}</strong></p>
-    </section>
+    </BaseDashboardCard>
 
-    <section class="list-box">
-      <h2>지역별 날씨 현황</h2>
-
-      <article
-        v-for="item in filteredWeatherList"
-        :key="item.id"
-        class="weather-card"
-        @click="selectedCityInfo = `${item.name}이 선택되었습니다.`"
-      >
-        <h3>{{ item.name }} ({{ item.status }})</h3>
-        <p>현재 기온: {{ item.temp }}℃</p>
-
-        <span v-if="item.temp >= 25">더움</span>
-        <span v-else>선선함</span>
-
-        <button @click.stop="showDetail(item.name, item.status)">상세보기</button>
-      </article>
-    </section>
+    <BaseDashboardCard>
+      <template #title><h2>지역별 날씨 현황</h2></template>
+      <WeatherCard
+        v-for="city in filteredWeatherList"
+        :key="city.id"
+        :city-item="city"
+        @select-card="(message) => (selectedCityInfo = message)"
+        @click-detail="showDetail"
+      />
+      <p v-if="filteredWeatherList.length === 0">검색 결과가 없습니다.</p>
+    </BaseDashboardCard>
 
     <p class="status-bar">{{ selectedCityInfo }}</p>
   </div>
