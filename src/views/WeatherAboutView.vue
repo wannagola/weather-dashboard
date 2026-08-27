@@ -18,10 +18,10 @@ const router = useRouter()
     <p class="about-text">
       특징 : Vue Router, Pinia, Axios, Element Plus를 하나의 SPA에서 연결합니다.
     </p>
-    <p>
-        <strong>사용된 API</strong> : OpenWeatherMap API, Wikipedia API
+    <p class="about-text">
+      사용된 API: OpenWeatherMap API, Wikipedia API
     </p>
-    <p>개발자 : Sung Minki(https://github.com/sungmg01)</p>
+    <p class="about-text">개발자 : Sung Minki(https://github.com/sungmg01)</p>
 
     <el-button size="large" @click="router.push({ name: 'WeatherHome' })">
       ← 메인으로 돌아가기
