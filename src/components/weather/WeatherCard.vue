@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useTemperature } from '@/composables/useTemperature'
+import { useFavoritesStore } from '@/stores/favoritesStore'
 import { getWeatherIcon } from '@/utils/weatherIcons'
 
 const props = defineProps({
@@ -9,9 +10,12 @@ const props = defineProps({
 
 const emit = defineEmits(['select-card', 'click-detail'])
 
+const favoritesStore = useFavoritesStore()
+
 const { displayTemp, unitSymbol } = useTemperature(() => props.cityItem.temp)
 
 const isHot = computed(() => props.cityItem.temp >= 25)
+const isFavorite = computed(() => favoritesStore.isFavorite(props.cityItem.id))
 </script>
 
 <template>
@@ -19,6 +23,14 @@ const isHot = computed(() => props.cityItem.temp >= 25)
     class="weather-card"
     @click="emit('select-card', `${props.cityItem.name}이 선택되었습니다.`)"
   >
+    <button
+      class="weather-card__favorite"
+      :class="{ 'weather-card__favorite--active': isFavorite }"
+      @click.stop="favoritesStore.toggleFavorite(props.cityItem.id)"
+    >
+      {{ isFavorite ? '★' : '☆' }}
+    </button>
+
     <img
       class="weather-card__icon"
       :src="getWeatherIcon(props.cityItem.condition)"
@@ -61,6 +73,23 @@ const isHot = computed(() => props.cityItem.temp >= 25)
 
 .weather-card:hover {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.weather-card__favorite {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  color: #dcdfe6;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.weather-card__favorite--active {
+  color: #f7ba2a;
 }
 
 .weather-card__icon {

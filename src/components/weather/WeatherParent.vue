@@ -6,14 +6,17 @@ import SearchBar from './SearchBar.vue'
 import WeatherCard from './WeatherCard.vue'
 import UnitToggler from './UnitToggler.vue'
 import { fetchWeatherList } from '@/services/weatherApi'
+import { useFavoritesStore } from '@/stores/favoritesStore'
 
 const route = useRoute()
 const router = useRouter()
+const favoritesStore = useFavoritesStore()
 
 const weatherList = ref([])
 const isLoading = ref(false)
 const errorMessage = ref('')
 const selectedCityInfo = ref('도시 카드를 선택해 보세요.')
+const favoritesOnly = ref(false)
 
 const searchQuery = ref(
   typeof route.query.search === 'string' ? route.query.search : '',
@@ -24,8 +27,17 @@ const currentPage = ref(1)
 
 const filteredWeatherList = computed(() => {
   const query = searchQuery.value.trim()
-  if (!query) return weatherList.value
-  return weatherList.value.filter((city) => city.name.includes(query))
+  let list = weatherList.value
+
+  if (query) {
+    list = list.filter((city) => city.name.includes(query))
+  }
+
+  if (favoritesOnly.value) {
+    list = list.filter((city) => favoritesStore.isFavorite(city.id))
+  }
+
+  return list
 })
 
 const paginatedWeatherList = computed(() => {
@@ -40,6 +52,10 @@ watch(searchQuery, (value) => {
   router.replace({
     query: { ...route.query, search: value || undefined },
   })
+})
+
+watch(favoritesOnly, () => {
+  currentPage.value = 1
 })
 
 watchEffect(() => {
@@ -81,7 +97,10 @@ function goDetail(cityId) {
       <template #title>
         <div class="section-title">
           <h2>지역별 날씨 현황</h2>
-          <UnitToggler />
+          <div class="section-title__actions">
+            <el-checkbox v-model="favoritesOnly">즐겨찾기만 보기</el-checkbox>
+            <UnitToggler />
+          </div>
         </div>
       </template>
       <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
@@ -94,7 +113,7 @@ function goDetail(cityId) {
           @select-card="(message) => (selectedCityInfo = message)"
           @click-detail="goDetail"
         />
-        <p v-if="filteredWeatherList.length === 0">검색 결과가 없습니다.</p>
+        <p v-if="filteredWeatherList.length === 0">표시할 도시가 없습니다.</p>
         <el-pagination
           v-else
           v-model:current-page="currentPage"
@@ -115,6 +134,12 @@ function goDetail(cityId) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.section-title__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .el-pagination {
