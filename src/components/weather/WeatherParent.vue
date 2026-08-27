@@ -69,8 +69,6 @@ function goDetail(cityId) {
 
 <template>
   <div>
-    <p class="status-bar">{{ selectedCityInfo }}</p>
-
     <BaseDashboardCard>
       <template #title><h2>도시 검색</h2></template>
       <SearchBar
@@ -107,6 +105,8 @@ function goDetail(cityId) {
         />
       </template>
     </BaseDashboardCard>
+
+    <p class="status-bar">{{ selectedCityInfo }}</p>
   </div>
 </template>
 
