@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 
 const weatherList = ref([
   { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
@@ -13,6 +13,22 @@ const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
 function showDetail(cityName, status) {
   window.alert(`${cityName}의 현재 날씨는 [${status}] 상태입니다.`)
 }
+
+const filteredWeatherList = computed(() => {
+  const query = searchQuery.value.trim()
+    
+  if (!query) return weatherList.value
+
+  return weatherList.value.filter((item) => item.name.includes(query))
+})
+
+watch(selectedCityInfo, (newInfo) => {
+  console.log('[watch] 선택 상태:', newInfo)
+})
+
+watchEffect(() => {
+  console.log('[watchEffect] 검색어:', searchQuery.value)
+})
 </script>
 
 <template>
@@ -32,7 +48,7 @@ function showDetail(cityName, status) {
       <h2>지역별 날씨 현황</h2>
 
       <article
-        v-for="item in weatherList"
+        v-for="item in filteredWeatherList"
         :key="item.id"
         class="weather-card"
         @click="selectedCityInfo = `${item.name}이 선택되었습니다.`"
