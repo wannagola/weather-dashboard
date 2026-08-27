@@ -2,13 +2,16 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTemperature } from '@/composables/useTemperature'
-import { fetchWeatherDetail } from '@/services/weatherApi'
+import { useConfigStore } from '@/stores/configStore'
+import { fetchWeatherDetail, fetchWeatherForecast } from '@/services/weatherApi'
 import BaseDashboardCard from '@/components/weather/BaseDashboardCard.vue'
 import { getWeatherIcon } from '@/utils/weatherIcons'
 
 const route = useRoute()
 const router = useRouter()
+const configStore = useConfigStore()
 const cityData = ref(null)
+const forecastList = ref([])
 const isLoading = ref(false)
 const errorMessage = ref('')
 
@@ -16,12 +19,33 @@ const { displayTemp, unitSymbol } = useTemperature(
   () => cityData.value?.temp ?? 0,
 )
 
+function toDisplayTemp(celsius) {
+  if (configStore.unit === 'fahrenheit') {
+    return Math.round((celsius * 9) / 5 + 32)
+  }
+  return Math.round(celsius)
+}
+
+function formatForecastDay(dateTime) {
+  return new Date(dateTime).toLocaleDateString('ko-KR', {
+    month: 'numeric',
+    day: 'numeric',
+    weekday: 'short',
+  })
+}
+
 async function loadWeatherDetail() {
   isLoading.value = true
   errorMessage.value = ''
 
   try {
-    cityData.value = await fetchWeatherDetail(String(route.params.cityId))
+    const cityId = String(route.params.cityId)
+    const [detail, forecast] = await Promise.all([
+      fetchWeatherDetail(cityId),
+      fetchWeatherForecast(cityId),
+    ])
+    cityData.value = detail
+    forecastList.value = forecast
     if (!cityData.value) errorMessage.value = '등록되지 않은 도시입니다.'
   } catch (error) {
     console.error(error)
@@ -66,6 +90,23 @@ onMounted(loadWeatherDetail)
         <div class="stat">
           <span class="stat__label">풍속</span>
           <span class="stat__value">{{ cityData.wind }}m/s</span>
+        </div>
+      </div>
+
+      <div v-if="forecastList.length" class="weather-detail__forecast">
+        <h4 class="weather-detail__forecast-title">5일 예보</h4>
+        <div class="weather-detail__forecast-list">
+          <div
+            v-for="item in forecastList"
+            :key="item.dateTime"
+            class="forecast-item"
+          >
+            <span class="forecast-item__day">{{ formatForecastDay(item.dateTime) }}</span>
+            <img :src="getWeatherIcon(item.condition)" class="forecast-item__icon" alt="" />
+            <span class="forecast-item__temp">
+              {{ toDisplayTemp(item.temp) }}{{ configStore.unitSymbol }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -143,6 +184,49 @@ onMounted(loadWeatherDetail)
 .stat__value {
   display: block;
   font-size: 18px;
+  font-weight: 600;
+}
+
+.weather-detail__forecast {
+  margin-bottom: 28px;
+}
+
+.weather-detail__forecast-title {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #606266;
+}
+
+.weather-detail__forecast-list {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+}
+
+.forecast-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 72px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  background: #f5f7fa;
+}
+
+.forecast-item__day {
+  font-size: 13px;
+  color: #909399;
+}
+
+.forecast-item__icon {
+  width: 36px;
+  height: 36px;
+}
+
+.forecast-item__temp {
+  font-size: 15px;
   font-weight: 600;
 }
 </style>

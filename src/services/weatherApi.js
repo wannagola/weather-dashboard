@@ -7,6 +7,11 @@ const weatherClient = axios.create({
   timeout: 7000,
 })
 
+const forecastClient = axios.create({
+  baseURL: 'https://api.openweathermap.org/data/2.5/forecast',
+  timeout: 7000,
+})
+
 export const CITY_LIST = [
   { id: 'city_01', name: '서울', lat: 37.5665, lon: 126.9780 },
   { id: 'city_02', name: '수원', lat: 37.2636, lon: 127.0286 },
@@ -78,4 +83,30 @@ export async function fetchWeatherDetail(cityId) {
 
   const data = await requestWeather(city)
   return normalizeWeather(city, data)
+}
+
+export async function fetchWeatherForecast(cityId) {
+  const city = CITY_LIST.find((item) => item.id === cityId)
+  if (!city) return []
+
+  assertApiKey()
+
+  const { data } = await forecastClient.get('', {
+    params: {
+      lat: city.lat,
+      lon: city.lon,
+      appid: API_KEY,
+      units: 'metric',
+      lang: 'kr',
+    },
+  })
+
+  return data.list
+    .filter((entry) => entry.dt_txt.includes('12:00:00'))
+    .map((entry) => ({
+      dateTime: entry.dt_txt,
+      temp: entry.main.temp,
+      status: entry.weather?.[0]?.description ?? '정보 없음',
+      condition: entry.weather?.[0]?.main ?? 'Clear',
+    }))
 }
