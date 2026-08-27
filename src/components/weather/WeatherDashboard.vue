@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseDashboardCard from './BaseDashboardCard.vue'
 import SearchBar from './SearchBar.vue'
@@ -30,6 +30,10 @@ watch(searchQuery, (value) => {
   router.replace({
     query: { ...route.query, search: value || undefined },
   })
+})
+
+watchEffect(() => {
+  console.log('[watchEffect] 검색어:', searchQuery.value)
 })
 
 async function loadWeather() {
