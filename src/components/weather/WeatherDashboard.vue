@@ -1,37 +1,22 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import BaseDashboardCard from './BaseDashboardCard.vue'
 import SearchBar from './SearchBar.vue'
 import WeatherCard from './WeatherCard.vue'
-import { useRouter } from 'vue-router'
+import { fetchWeatherList } from '@/services/weatherApi'
 
+const route = useRoute()
 const router = useRouter()
 
-const weatherList = ref([
-  { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
-  { id: 'city_02', name: '수원', temp: 24, status: '비' },
-  { id: 'city_03', name: '부산', temp: 26, status: '구름' },
-  { id: 'city_04', name: '대구', temp: 30, status: '맑음' },
-  { id: 'city_05', name: '광주', temp: 27, status: '비' },
-  { id: 'city_06', name: '대전', temp: 25, status: '맑음' },
-  { id: 'city_07', name: '울산', temp: 29, status: '구름' },
-  { id: 'city_08', name: '인천', temp: 23, status: '비' },
-  { id: 'city_09', name: '창원', temp: 28, status: '맑음' },
-  { id: 'city_10', name: '제주', temp: 22, status: '비' },
-  { id: 'city_11', name: '강릉', temp: 27, status: '맑음' },
-  { id: 'city_12', name: '전주', temp: 26, status: '구름' },
-  { id: 'city_13', name: '청주', temp: 25, status: '맑음' },
-  { id: 'city_14', name: '포항', temp: 29, status: '맑음' },
-  { id: 'city_15', name: '속초', temp: 24, status: '비' },
-  { id: 'city_16', name: '여수', temp: 28, status: '맑음' },
-  { id: 'city_17', name: '목포', temp: 27, status: '구름' },
-  { id: 'city_18', name: '군산', temp: 26, status: '맑음' },
-  { id: 'city_19', name: '김해', temp: 29, status: '맑음' },
-  { id: 'city_20', name: '양양', temp: 23, status: '비' },
-])
-
-const searchQuery = ref('')
+const weatherList = ref([])
+const isLoading = ref(false)
+const errorMessage = ref('')
 const selectedCityInfo = ref('도시 카드를 선택해 보세요.')
+
+const searchQuery = ref(
+  typeof route.query.search === 'string' ? route.query.search : '',
+)
 
 const filteredWeatherList = computed(() => {
   const query = searchQuery.value.trim()
@@ -41,6 +26,27 @@ const filteredWeatherList = computed(() => {
 
 watch(selectedCityInfo, (message) => console.log('[watch]', message))
 
+watch(searchQuery, (value) => {
+  router.replace({
+    query: { ...route.query, search: value || undefined },
+  })
+})
+
+async function loadWeather() {
+  isLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    weatherList.value = await fetchWeatherList()
+  } catch (error) {
+    console.error(error)
+    errorMessage.value = '날씨 정보를 불러오지 못했습니다. API Key와 네트워크 상태를 확인하세요.'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(loadWeather)
 
 function goDetail(cityId) {
   router.push({ name: 'WeatherDetail', params: { cityId } })
@@ -59,14 +65,18 @@ function goDetail(cityId) {
 
     <BaseDashboardCard>
       <template #title><h2>지역별 날씨 현황</h2></template>
-      <WeatherCard
-        v-for="city in filteredWeatherList"
-        :key="city.id"
-        :city-item="city"
-        @select-card="(message) => (selectedCityInfo = message)"
-        @click-detail="goDetail"
-      />
-      <p v-if="filteredWeatherList.length === 0">검색 결과가 없습니다.</p>
+      <p v-if="isLoading">날씨 정보를 불러오는 중입니다...</p>
+      <p v-else-if="errorMessage">{{ errorMessage }}</p>
+      <template v-else>
+        <WeatherCard
+          v-for="city in filteredWeatherList"
+          :key="city.id"
+          :city-item="city"
+          @select-card="(message) => (selectedCityInfo = message)"
+          @click-detail="goDetail"
+        />
+        <p v-if="filteredWeatherList.length === 0">검색 결과가 없습니다.</p>
+      </template>
     </BaseDashboardCard>
 
     <p class="status-bar">{{ selectedCityInfo }}</p>
