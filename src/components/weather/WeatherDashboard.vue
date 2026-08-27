@@ -5,6 +5,7 @@ const weatherList = ref([
   { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
   { id: 'city_02', name: '수원', temp: 24, status: '비' },
   { id: 'city_03', name: '부산', temp: 26, status: '구름' },
+  { id: 'city_04', name: '대구', temp: 22, status: '흐림' },
 ])
 
 const searchQuery = ref('')
@@ -16,7 +17,7 @@ function showDetail(cityName, status) {
 
 const filteredWeatherList = computed(() => {
   const query = searchQuery.value.trim()
-    
+
   if (!query) return weatherList.value
 
   return weatherList.value.filter((item) => item.name.includes(query))
