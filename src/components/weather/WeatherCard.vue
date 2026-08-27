@@ -23,8 +23,11 @@ const { displayTemp, unitSymbol } = useTemperature(() => props.cityItem.temp)
     
     <span v-else>선선함</span>
 
-    <button @click.stop="emit('click-detail', props.cityItem.id)">
-      상세보기
-    </button>
+    <el-button
+        type="primary"
+        @click.stop="emit('click-detail', props.cityItem.id)"
+    >
+        상세보기
+    </el-button>
   </article>
 </template>
