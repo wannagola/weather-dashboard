@@ -1,7 +1,7 @@
 <script setup>
-import WeatherDashboard from '@/components/weather/WeatherDashboard.vue'
+import WeatherParent from '@/components/weather/WeatherParent.vue'
 </script>
 
 <template>
-  <WeatherDashboard />
+  <WeatherParent />
 </template>
