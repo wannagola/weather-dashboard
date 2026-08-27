@@ -58,6 +58,7 @@ function normalizeWeather(city, data) {
     name: city.name,
     temp: data.main.temp,
     status: data.weather?.[0]?.description ?? '정보 없음',
+    condition: data.weather?.[0]?.main ?? 'Clear',
     humidity: data.main.humidity,
     wind: data.wind.speed,
   }

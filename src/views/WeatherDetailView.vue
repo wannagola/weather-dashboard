@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTemperature } from '@/composables/useTemperature'
 import { fetchWeatherDetail } from '@/services/weatherApi'
 import BaseDashboardCard from '@/components/weather/BaseDashboardCard.vue'
+import { getWeatherIcon } from '@/utils/weatherIcons'
 
 const route = useRoute()
 const router = useRouter()
@@ -42,13 +43,20 @@ onMounted(loadWeatherDetail)
 
     <div v-else-if="cityData" class="weather-detail">
       <div class="weather-detail__header">
-        <h3 class="weather-detail__name">{{ cityData.name }}</h3>
-        <el-tag size="large" effect="plain">{{ cityData.status }}</el-tag>
-      </div>
+        <div class="weather-detail__title">
+          <img
+            class="weather-detail__icon"
+            :src="getWeatherIcon(cityData.condition)"
+            alt=""
+          />
+          <h3 class="weather-detail__name">{{ cityData.name }}</h3>
+          <el-tag size="large" effect="plain">{{ cityData.status }}</el-tag>
+        </div>
 
-      <p class="weather-detail__temp">
-        {{ displayTemp }}<span class="weather-detail__unit">{{ unitSymbol }}</span>
-      </p>
+        <p class="weather-detail__temp">
+          {{ displayTemp }}<span class="weather-detail__unit">{{ unitSymbol }}</span>
+        </p>
+      </div>
 
       <div class="weather-detail__stats">
         <div class="stat">
@@ -72,26 +80,41 @@ onMounted(loadWeatherDetail)
 .weather-detail__header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.weather-detail__title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.weather-detail__icon {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
 }
 
 .weather-detail__name {
   margin: 0;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 40px;
+  font-weight: 800;
 }
 
 .weather-detail__temp {
-  margin: 0 0 20px 0;
-  font-size: 56px;
+  margin: 0;
+  font-size: 52px;
   font-weight: 700;
   line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .weather-detail__unit {
   margin-left: 4px;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 500;
   color: #909399;
 }

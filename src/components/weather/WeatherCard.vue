@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useTemperature } from '@/composables/useTemperature'
+import { getWeatherIcon } from '@/utils/weatherIcons'
 
 const props = defineProps({
   cityItem: { type: Object, required: true },
@@ -18,6 +19,12 @@ const isHot = computed(() => props.cityItem.temp >= 25)
     class="weather-card"
     @click="emit('select-card', `${props.cityItem.name}이 선택되었습니다.`)"
   >
+    <img
+      class="weather-card__icon"
+      :src="getWeatherIcon(props.cityItem.condition)"
+      alt=""
+    />
+
     <h3 class="weather-card__name">{{ props.cityItem.name }}</h3>
 
     <div class="weather-card__stats">
@@ -54,6 +61,12 @@ const isHot = computed(() => props.cityItem.temp >= 25)
 
 .weather-card:hover {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.weather-card__icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
 }
 
 .weather-card__name {
